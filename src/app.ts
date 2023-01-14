@@ -13,15 +13,23 @@ interface Course {
     count: number;
 }
 
-const globalCourseList: Course[] = [];
+let globalCourseList: Course[] = [];
 
 
 EventListenersInit();
 function EventListenersInit(): void {
+    document.addEventListener("DOMContentLoaded", loadFromLocalStorage);
     // Delegacion para detectar que se dio clic en algun elemento dentro de la lista de cursos
     coursesList_div.addEventListener("click", addCourse);
     resetCartBtn_a.addEventListener("click", resetCart);
     cart_div.addEventListener("click", deleteCourse);
+}
+
+function loadFromLocalStorage() {
+    globalCourseList = JSON.parse(localStorage.getItem("cart") ?? "");
+    if (globalCourseList) {
+        putInCart(globalCourseList);
+    }
 }
 
 function addCourse(e: Event): void {
@@ -32,6 +40,7 @@ function addCourse(e: Event): void {
     if (element.classList.contains("agregar-carrito")) {
         const course: Course = readCourseData(element.parentElement?.parentElement as HTMLElement);
         addToCourseList(course, globalCourseList);
+        saveToLocalStorage(globalCourseList);
         putInCart(globalCourseList);
     }
 }
@@ -120,6 +129,7 @@ function resetCart(): void {
     globalCourseList.length = 0;
     resetHtmlCart();
     cartCount(globalCourseList);
+    resetLocalStorage();
 }
 
 function deleteCourse(e: Event): void {
@@ -129,6 +139,7 @@ function deleteCourse(e: Event): void {
         const courseId = element.getAttribute("data-id");
         removeCourseFromListById(courseId ?? "", globalCourseList);
         putInCart(globalCourseList);
+        saveToLocalStorage(globalCourseList);
     }
 }
 
@@ -142,4 +153,12 @@ function removeCourseFromListById(id: string, courseList: Course[]): void {
     }
 
     courseList.splice(courseIndex, 1);
+}
+
+function saveToLocalStorage(courseList: Course[]) {
+    localStorage.setItem("cart", JSON.stringify(courseList));
+}
+
+function resetLocalStorage() {
+    localStorage.removeItem("cart");
 }
